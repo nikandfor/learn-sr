@@ -1,0 +1,62 @@
+
+body {
+	margin: 0;
+	padding: 0;
+	//overflow: hidden;
+
+	min-height: 100dvh;
+}
+
+main {
+	margin: 8px;
+}
+
+header, footer {
+	margin: 8px;
+
+	background: blue;
+}
+
+header {
+	min-height: 40px;
+}
+
+footer {
+	min-height: 30px;
+}
+
+page {
+	display: block;
+	max-width: 1024px;
+	margin: auto;
+}
+
+.flex-col {
+	display: flex;
+	flex-direction: column;
+}
+
+.flex-row {
+	display: flex;
+	flex-direction: row;
+}
+
+.flex-middle {
+	flex: 1;
+}
+
+.flex-left {
+	flex-direction: row;
+}
+
+.flex-right {
+	flex-direction: row-reverse;
+}
+
+.wide {
+	overflow-x: scroll;
+}
+
+.cell {
+	background: #f2f2f2;
+}

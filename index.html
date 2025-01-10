@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+	<meta charset="utf-8" />
+	<title>Serbian</title>
+
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<link rel="canonical" href="/" />
+
+	<link rel="stylesheet" href="css/style.css">
+
+	<script src="/js/sr.js"></script>
+</head>
+<body class="flex-col">
+	<header class="flex-row flex-top">
+	</header>
+	<main id="main" class="flex-middle">
+		<page id="alphabet">
+			<h2>Alphabet</h2>
+			<div id="alphabet-table" class="wide"></div>
+			<style>
+				#alphabet-table {
+					display: grid;
+					grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+					gap: 10px;
+				}
+				letter {
+					display: grid;
+					grid-template-columns: 2fr 1fr;
+					grid-template-rows: 1.5fr 1fr;
+					gap: 10px;
+
+					//margin: auto;
+					padding: 0.4em;
+				}
+				letter div {
+					display: flex;
+					justify-content: center;
+					align-items: flex-end;
+
+					//border: blue 1px solid;
+				}
+				letter :first-child {
+					font-size: 150%;
+				}
+				letter :nth-child(n+3) {
+					font-size: 80%;
+				}
+			</style>
+			<script>
+				{
+
+				let tab = document.getElementById("alphabet-table")
+
+				for (const [c, l] of cyr2lat) {
+				//	console.log("letter", c, l)
+
+					tab.insertAdjacentHTML("beforeend", `
+						<letter class="cell">
+							<div class="lat up">${l.toUpperCase()}</div>
+							<div class="lat low">${l}</div>
+							<div class="lat up">${c.toUpperCase()}</div>
+							<div class="cyr low">${c}</div>
+						</letter>
+					`)
+				}
+
+				}
+			</script>
+		</page>
+		<page id="biti">
+			<h2>Biti</h2>
+			<div id="biti-table" class="wide"></div>
+			<style>
+				#biti-table {
+					display: grid;
+					grid-template-columns: 1fr 1fr;
+					gap: 10px;
+					max-width: 800px;
+					margin: auto;
+				}
+				biti {
+					display: grid;
+					grid-template-columns: 2fr 1fr;
+					grid-template-rows: 1.5fr 1fr;
+					gap: 10px;
+
+					//margin: auto;
+					padding: 0.4em;
+				}
+				biti div {
+					display: flex;
+					justify-content: center;
+					align-items: flex-end;
+
+					//border: blue 1px solid;
+				}
+			</style>
+			<script>
+				{
+
+				let tab = document.getElementById("biti-table")
+
+				for (const [k, v] of [
+					["Ja", "sam"],
+					["Ti", "si"],
+					["Mi", "smo"],
+					["Vi", "ste"],
+					["On, Ona, One", "je"],
+					["Oni, One, Ona", "su"],
+				]) {
+				//	console.log("biti", k, v)
+
+					tab.insertAdjacentHTML("beforeend", `<biti class="cell"><div class="">${k}</div><div class="">${v}</div></biti>`)
+				}
+
+				}
+			</script>
+		</page>
+		<page id="broj">
+			<h2>Brojevi</h2>
+			<div id="broj-calc" class="cardinal">
+				<label>Ordinal <input id="broj-calc-ordinal" type="checkbox"></label>
+				<label>number <input id="broj-calc-input" type="number"></label>
+				<label>is <span id="broj-calc-result"></span>
+			</div>
+			<fieldset id="broj-table-options">
+				<legend>Table options: </legend>
+				<label>Ordinal <input id="broj-table-ordinal" type="checkbox"></label>
+
+				<label>Legend: symbols is <span class="lost">removed</span> or <span class="replaced">replaced</span></label>
+			</fieldset>
+			<div id="broj-table" class="wide cardinal"></div>
+			<style>
+				#broj-table {
+					display: grid;
+					grid-template-columns: 1fr 1fr 1fr 1fr;
+					gap: 10px;
+					//max-width: 800px;
+					margin: auto;
+					margin-top: 10px;
+				}
+				broj {
+					display: grid;
+					//grid-template-columns: 1fr;
+					//grid-template-rows: 1fr;
+					gap: 10px;
+
+					//margin: auto;
+					padding: 0.4em;
+				}
+				broj div {
+					display: flex;
+					justify-content: center;
+					align-items: flex-end;
+
+					//border: blue 1px solid;
+				}
+				#broj .lost {
+					color: #c00;
+					opacity: 0.5;
+				}
+				#broj .replaced {
+					font-size: 110%;
+					color: #009c3f;
+				}
+				#broj .suffix {
+					color: #777;
+				}
+				#broj-table.ordinal .card,
+				#broj-table.cardinal .ord,
+				#broj-calc.ordinal .card,
+				#broj-calc.cardinal .ord {
+					display: none;
+				}
+			</style>
+			<script>
+				{
+				let calcEl = document.getElementById("broj-calc")
+				let calcIn = document.getElementById("broj-calc-input")
+				let calcRes = document.getElementById("broj-calc-result")
+				let calcOrd = document.getElementById("broj-calc-ordinal")
+
+				const calc = function() {
+					calcRes.innerHTML = new Number(this.value).toString({
+						NumberTextFormat: NumberTextFormat.HTML,
+					//	NumberType: calcOrd.checked? NumberType.Ordinal: NumberType.Cardinal,
+					})
+				}
+
+				calcIn.oninput = calc
+				calcIn.onchange = calc
+				calcOrd.onchange = function() {
+					calcEl.classList.toggle("cardinal")
+					calcEl.classList.toggle("ordinal")
+				}
+
+				let tab = document.getElementById("broj-table")
+
+				function addHTMLCell(t) {
+					tab.insertAdjacentHTML("beforeend", `<broj class="cell">${t}</broj>`)
+				}
+
+				function addTextCell(t, t0) {
+					addHTMLCell(`${t0? `<div>${t0}</div>`: ""}<div>${t}</div>`)
+				}
+
+				function addNumCell(v) {
+						addHTMLCell(`<div>${v}<span class="ord">.</span></div><div>${
+					new Number(v).toString({
+						NumberTextFormat: NumberTextFormat.HTML,
+					})}</div>`)
+				}
+
+				function addSpanCell(cols) {
+					addHTMLCell(`<div style="grid-column-end: span ${cols}"></div>`)
+				}
+
+				if (false) {
+					addNumCell(0)
+					addNumCell(10)
+					//addSpanCell(3)
+					addNumCell(0)
+					addNumCell(0)
+					addNumCell(0)
+				}
+
+				for (let i = 1; i < 10; i++) {
+					for (const b of [1, 0, 10, 100]) {
+						let v = b == 0? 10 + i: b * i
+
+					//	console.log("broj", b, i, v)
+
+						addNumCell(v)
+					}
+				}
+
+				if (false) {
+					addNumCell(10)
+					addNumCell(20)
+					addNumCell(100)
+					addNumCell(1000)
+					//addNumCell(10000)
+					addTextCell("over 9000")
+				}
+
+				document.getElementById("broj-table-ordinal").onchange = function() {
+					tab.classList.toggle("cardinal")
+					tab.classList.toggle("ordinal")
+				}
+
+				}
+			</script>
+		</page>
+	</main>
+	<footer class="flex-row flex-bottom">
+	</footer>
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+		//	setPage("alphabet")
+		})
+	</script>
+</body>
+</html>
