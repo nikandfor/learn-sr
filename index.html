@@ -2,7 +2,7 @@
 <html lang="en-US">
 <head>
 	<meta charset="utf-8" />
-	<title>Serbian</title>
+	<title>Serbian Chect Sheets</title>
 
 	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 	<link rel="canonical" href="/" />
@@ -11,10 +11,11 @@
 
 	<script src="js/sr.js"></script>
 </head>
-<body class="flex-col">
-	<header class="flex-row flex-top">
+<body>
+	<header>
+		Serbian Cheat Sheets
 	</header>
-	<main id="main" class="flex-middle">
+	<main id="main">
 		<page id="alphabet">
 			<h2>Alphabet</h2>
 			<div id="alphabet-table" class="wide"></div>
@@ -112,6 +113,137 @@
 				//	console.log("biti", k, v)
 
 					tab.insertAdjacentHTML("beforeend", `<biti class="cell"><div class="">${k}</div><div class="">${v}</div></biti>`)
+				}
+
+				}
+			</script>
+		</page>
+		<page id="ending">
+			<h2>Word Endings</h2>
+
+			<div id="ending-table" class="wide"></div>
+			<style>
+				#ending-table {
+					display: grid;
+					grid-template-columns: 1fr 1fr 1fr 1fr;
+					gap: 10px;
+					//max-width: 800px;
+					margin: auto;
+				}
+				#ending-table cell {
+					display: grid;
+					grid-template-columns: 50px 1fr;
+					/*
+					display: flex;
+					flex-wrap: wrap;
+					//justify-content: space-evenly;
+					min-width: 100px;
+					*/
+					padding: 0.4em;
+				}
+				#ending-table cell.header {
+					display: block;
+				}
+				#ending-table :is(.singular, .plural, examples) {
+					display: flex;
+				}
+				#ending-table ending {
+					font-size: 130%;
+					text-align: center;
+				}
+				#ending-table example {
+					//background: gray;
+					white-space: nowrap;
+					margin: 4px;
+				}
+				#ending-table .boxed {
+					display: inline-block;
+					min-width: 1ch;
+					min-height: 1rem;
+					border: #0004 1px solid;
+					color: red;
+				}
+			</style>
+			<script>
+				{
+
+				let data = [
+					["", "Masculine", "Femine", "Neuter"],
+					["Nominativ",
+						["", "i"],
+						["a", "e"],
+						[["o","e"], "a"],
+					],
+					["Genitiv",
+						["a", "a"],
+						["e", "a"],
+						["a", "a"],
+					],
+					["Dativ",
+						["u", "ima"],
+						["i", "ama"],
+						["u", "ima"],
+					],
+					["Akuzativ",
+						[["","a"], "e"],
+						["u", "e"],
+						[["o", "e"], "a"],
+					],
+					["Vokativ",
+						["om", "ima"],
+						["om", "ama"],
+						["om", "ima"],
+					],
+					["Instrumental",
+						["u", "ima"],
+						["i", "ama"],
+						["u", "ima"],
+					],
+					["Lokativ",
+						["e", "i"],
+						["o", "e"],
+						["o", "a"],
+					],
+				]
+
+				const examples = [
+					["grad", "profesor"], ["žen"], ["sel", ["det", "e"]],
+				]
+
+				let tab = document.getElementById("ending-table")
+
+				let cell = (t, c) => tab.insertAdjacentHTML("beforeend", `<cell class="cell${ c? " " + c:"" }">${t || ""}</cell>`)
+				let wrap = (t, c, elem = "span") => `<${elem}${ c? ` class="${c}"`: "" }>${t}</${elem}>`
+				let end = t => `<ending>${t == ""? "Ø": t}</ending>`
+				let end2 = d => Array.isArray(d)? `<div>${ end(d[0]) + " / " + end(d[1]) }</div>`: end(d)
+				let boxed = t => wrap(t, "boxed")
+
+				let arrel = (a, i, def) => Array.isArray(a)? a[i]: (def !== undefined? def: a)
+				let exone = t => `<example>${t}</example>`
+				let exword = (e, w) => `<example>${ arrel(w, 0) }${ boxed(arrel(w, 1, arrel(e, 0))) }</example>`
+
+				let examps = (e, ws) => `<examples>${ ws.map(w => exword(e, w)).join("") }</examples>`
+				//let ending = (d, c, i, j) => `<plurarity class="${c}">${ end2(d) }${ examps(d, examples[j]) }</plurarity>`
+				let ending = (d, c, i, j) => end2(d) + examps(d, examples[j])
+				let both = (d, i, j) => cell(ending(d[0], "singular", i, j) + ending(d[1], "plural", i, j))
+
+				for (const [i, row] of data.entries()) {
+					if (i == 0) {
+						for (const pl of row) {
+							cell(pl, "header")
+						}
+
+						continue
+					}
+
+					for (const [j, pl] of row.entries()) {
+						if (j == 0) {
+							cell(pl, "header")
+							continue
+						}
+
+						both(pl, i - 1, j - 1)
+					}
 				}
 
 				}
@@ -281,11 +413,11 @@
 			</script>
 		</page>
 	</main>
-	<footer class="flex-row flex-bottom">
+	<footer>
+		nikandfor, 2025
 	</footer>
 	<script>
 		document.addEventListener('DOMContentLoaded', function() {
-		//	setPage("alphabet")
 		})
 	</script>
 </body>

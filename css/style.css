@@ -1,56 +1,37 @@
 
 body {
-	margin: 0;
-	padding: 0;
+	display: grid;
+	grid-template-rows: auto 1fr auto;
+
+	//margin: 0;
+	//padding: 0;
 	//overflow: hidden;
 
 	min-height: 100dvh;
-}
+	max-width: 1024px;
 
-main {
-	margin: 8px;
+	margin: auto;
 }
 
 header, footer {
-	margin: 8px;
+	padding: 10px;
 
-	background: blue;
-}
-
-header {
-	min-height: 40px;
+	background: lightgray;
 }
 
 footer {
-	min-height: 30px;
+	text-align: right;
+}
+
+main {
+	overflow-x: hidden;
 }
 
 page {
 	display: block;
 	max-width: 1024px;
 	margin: auto;
-}
-
-.flex-col {
-	display: flex;
-	flex-direction: column;
-}
-
-.flex-row {
-	display: flex;
-	flex-direction: row;
-}
-
-.flex-middle {
-	flex: 1;
-}
-
-.flex-left {
-	flex-direction: row;
-}
-
-.flex-right {
-	flex-direction: row-reverse;
+	padding: 10px;
 }
 
 .wide {

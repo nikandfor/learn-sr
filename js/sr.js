@@ -105,7 +105,7 @@ const Number = function() {
 	const baseExc = new Map()
 
 	function c(v, cfg = {}) {
-		if ((typeof parseInt(v)) != "number" || isNaN(v) || !isFinite(v)) return "wtf: " + v
+		if (typeof parseInt(v) != "number" || isNaN(v) || !isFinite(v)) return "wtf: " + v
 
 		const tf = cfg.NumberTextFormat || NumberTextFormat.Text
 		const hh = tf == NumberTextFormat.HTML
