@@ -122,7 +122,7 @@
 			<div id="broj-calc" class="cardinal">
 				<label>Ordinal <input id="broj-calc-ordinal" type="checkbox"></label>
 				<label>number <input id="broj-calc-input" type="number"></label>
-				<label>is <span id="broj-calc-result"></span>
+				<label>is <span id="broj-calc-result" style="font-size: 300%;"></span>
 			</div>
 			<fieldset id="broj-table-options">
 				<legend>Table options: </legend>
@@ -181,15 +181,15 @@
 				let calcRes = document.getElementById("broj-calc-result")
 				let calcOrd = document.getElementById("broj-calc-ordinal")
 
-				const calc = function() {
-					calcRes.innerHTML = new Number(this.value).toString({
+				const calc = function(e, val) {
+					calcRes.innerHTML = new Number(val || this.value).toString({
 						NumberTextFormat: NumberTextFormat.HTML,
 					//	NumberType: calcOrd.checked? NumberType.Ordinal: NumberType.Cardinal,
 					})
 				}
 
 				calcIn.oninput = calc
-				calcIn.onchange = calc
+				//calcIn.onchange = calc
 				calcOrd.onchange = function() {
 					calcEl.classList.toggle("cardinal")
 					calcEl.classList.toggle("ordinal")
@@ -247,6 +247,34 @@
 				document.getElementById("broj-table-ordinal").onchange = function() {
 					tab.classList.toggle("cardinal")
 					tab.classList.toggle("ordinal")
+				}
+
+
+				{
+					let q = new URLSearchParams(window.location.search)
+					let calcIn = document.getElementById("broj-calc-input")
+					let calcOrd = document.getElementById("broj-calc-ordinal")
+					let tabOrd = document.getElementById("broj-table-ordinal")
+
+					if (q.has("broj-ordinal")) {
+						calcOrd.click()
+						tabOrd.click()
+					}
+
+					if (q.has("broj-ordinal-calc")) {
+						calcOrd.click()
+					}
+
+					if (q.has("broj-ordinal-table")) {
+						tabOrd.click()
+					}
+
+
+					const val = q.get("broj-calc")
+					if (val) {
+						calcIn.value = val
+						calc(null, val)
+					}
 				}
 
 				}
