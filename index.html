@@ -1,18 +1,20 @@
 <!DOCTYPE html>
-<html lang="en-US">
+<html lang="en-US" style="font-size: large">
 <head>
 	<meta charset="utf-8" />
-	<title>Serbian Chect Sheets</title>
+	<title>Serbian Cheat Sheets</title>
 
-	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes" />
+	<meta name="theme-color" content="lightgray" />
 	<link rel="canonical" href="/" />
 
 	<link rel="stylesheet" href="css/style.css">
 
 	<script src="js/sr.js"></script>
+	<script src="js/words.js"></script>
 </head>
 <body>
-	<header>
+	<header class="three-row">
 		Serbian Cheat Sheets
 	</header>
 	<main id="main">
@@ -30,9 +32,6 @@
 					grid-template-columns: 2fr 1fr;
 					grid-template-rows: 1.5fr 1fr;
 					gap: 10px;
-
-					//margin: auto;
-					padding: 0.4em;
 				}
 				letter div {
 					display: flex;
@@ -82,19 +81,18 @@
 				}
 				biti {
 					display: grid;
-					grid-template-columns: 2fr 1fr;
-					grid-template-rows: 1.5fr 1fr;
+					grid-template-columns: 1fr 1fr;
 					gap: 10px;
-
-					//margin: auto;
-					padding: 0.4em;
 				}
 				biti div {
-					display: flex;
+					//display: flex;
 					justify-content: center;
 					align-items: flex-end;
 
 					//border: blue 1px solid;
+				}
+				biti .header {
+					color: hsl(0 0 50% / 1);
 				}
 			</style>
 			<script>
@@ -104,15 +102,15 @@
 
 				for (const [k, v] of [
 					["Ja", "sam"],
-					["Ti", "si"],
 					["Mi", "smo"],
+					["Ti", "si"],
 					["Vi", "ste"],
 					["On, Ona, One", "je"],
 					["Oni, One, Ona", "su"],
 				]) {
 				//	console.log("biti", k, v)
 
-					tab.insertAdjacentHTML("beforeend", `<biti class="cell"><div class="">${k}</div><div class="">${v}</div></biti>`)
+					tab.insertAdjacentHTML("beforeend", `<biti class="cell"><div class="header">${k}</div><div class="verb">${v}</div></biti>`)
 				}
 
 				}
@@ -133,13 +131,11 @@
 				#ending-table cell {
 					display: grid;
 					grid-template-columns: 50px 1fr;
-					/*
-					display: flex;
-					flex-wrap: wrap;
-					//justify-content: space-evenly;
-					min-width: 100px;
-					*/
-					padding: 0.4em;
+				}
+				#ending-table cell.caseq {
+					display: grid;
+					grid-template-rows: auto auto;
+					grid-template-columns: unset;
 				}
 				#ending-table cell.header {
 					display: block;
@@ -155,13 +151,17 @@
 					//background: gray;
 					white-space: nowrap;
 					margin: 4px;
+					color: hsl(0 0 50% / 1);
 				}
 				#ending-table .boxed {
 					display: inline-block;
 					min-width: 1ch;
 					min-height: 1rem;
-					border: #0004 1px solid;
-					color: red;
+					//border: #0003 1px solid;
+					color: hsl(0 100% 50% / 1);
+				}
+				#ending-table question {
+					color: hsl(0 0 50% / 1);
 				}
 			</style>
 			<script>
@@ -169,37 +169,37 @@
 
 				let data = [
 					["", "Masculine", "Femine", "Neuter"],
-					["Nominativ",
+					[["Nominativ", "Kto?", "Šta?"],
 						["", "i"],
 						["a", "e"],
 						[["o","e"], "a"],
 					],
-					["Genitiv",
+					[["Genitiv", "Čiji?", "Od koga?", "Od čega?"],
 						["a", "a"],
 						["e", "a"],
 						["a", "a"],
 					],
-					["Dativ",
+					[["Dativ", "Kome?", "Čemu?"],
 						["u", "ima"],
 						["i", "ama"],
 						["u", "ima"],
 					],
-					["Akuzativ",
+					[["Akuzativ", "Koga?", "Šta?"],
 						[["","a"], "e"],
 						["u", "e"],
 						[["o", "e"], "a"],
 					],
-					["Vokativ",
+					[["Vokativ", "S kim?", "S čim?"],
 						["om", "ima"],
 						["om", "ama"],
 						["om", "ima"],
 					],
-					["Instrumental",
+					[["Instrumental", "O kome?", "O čemu?", "Gde?"],
 						["u", "ima"],
 						["i", "ama"],
 						["u", "ima"],
 					],
-					["Lokativ",
+					[["Lokativ", "(Obraćanje ili priziv, nema direktnog pitanja)"],
 						["e", "i"],
 						["o", "e"],
 						["o", "a"],
@@ -207,7 +207,7 @@
 				]
 
 				const examples = [
-					["grad", "profesor"], ["žen"], ["sel", ["det", "e"]],
+					["grad", ["drug", "a"]], ["žen"], ["sel", ["det", "e"]],
 				]
 
 				let tab = document.getElementById("ending-table")
@@ -218,9 +218,14 @@
 				let end2 = d => Array.isArray(d)? `<div>${ end(d[0]) + " / " + end(d[1]) }</div>`: end(d)
 				let boxed = t => wrap(t, "boxed")
 
-				let arrel = (a, i, def) => Array.isArray(a)? a[i]: (def !== undefined? def: a)
-				let exone = t => `<example>${t}</example>`
-				let exword = (e, w) => `<example>${ arrel(w, 0) }${ boxed(arrel(w, 1, arrel(e, 0))) }</example>`
+				let listels = (l, tag) => l.map(w => `<${tag}>${w}</${tag}>`).join("\n")
+				let list = (l, tag) => `<${tag}s>${listels(l, tag)}</${tag}s>`
+				let caseq = d => cell(`${d[0]}${list(d.slice(1), "question")}`, "caseq")
+
+				let isarr = Array.isArray
+				let exend = (e, w) => !isarr(e)? e: !isarr(w)? e[0]: w[1]
+				let exword = (e, w) => `<example>${ isarr(w)? w[0]: w }${ boxed(exend(e, w)) }</example>`
+
 
 				let examps = (e, ws) => `<examples>${ ws.map(w => exword(e, w)).join("") }</examples>`
 				//let ending = (d, c, i, j) => `<plurarity class="${c}">${ end2(d) }${ examps(d, examples[j]) }</plurarity>`
@@ -238,7 +243,7 @@
 
 					for (const [j, pl] of row.entries()) {
 						if (j == 0) {
-							cell(pl, "header")
+							caseq(pl)
 							continue
 						}
 
@@ -277,16 +282,11 @@
 					//grid-template-columns: 1fr;
 					//grid-template-rows: 1fr;
 					gap: 10px;
-
-					//margin: auto;
-					padding: 0.4em;
 				}
 				broj div {
-					display: flex;
+					//display: flex;
 					justify-content: center;
 					align-items: flex-end;
-
-					//border: blue 1px solid;
 				}
 				#broj .lost {
 					color: #c00;
@@ -313,7 +313,7 @@
 				let calcRes = document.getElementById("broj-calc-result")
 				let calcOrd = document.getElementById("broj-calc-ordinal")
 
-				const calc = function(e, val) {
+				let calc = function(e, val) {
 					calcRes.innerHTML = new Number(val || this.value).toString({
 						NumberTextFormat: NumberTextFormat.HTML,
 					//	NumberType: calcOrd.checked? NumberType.Ordinal: NumberType.Cardinal,
@@ -401,7 +401,6 @@
 						tabOrd.click()
 					}
 
-
 					const val = q.get("broj-calc")
 					if (val) {
 						calcIn.value = val
@@ -413,8 +412,10 @@
 			</script>
 		</page>
 	</main>
-	<footer>
-		nikandfor, 2025
+	<footer class="three-row">
+		<contacts>hey@nikand.dev</contacts>
+		<div></div>
+		<copyright>nikandfor, 2025</copyright>
 	</footer>
 	<script>
 		document.addEventListener('DOMContentLoaded', function() {
