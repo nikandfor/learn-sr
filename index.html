@@ -76,8 +76,9 @@
 					display: grid;
 					grid-template-columns: 1fr 1fr;
 					gap: 10px;
-					max-width: 800px;
-					margin: auto;
+				//	max-width: 800px;
+				//	margin: auto;
+					text-align: center;
 				}
 				biti {
 					display: grid;
@@ -132,13 +133,14 @@
 					display: grid;
 					grid-template-columns: 50px 1fr;
 				}
-				#ending-table cell.caseq {
+				#ending-table cell.lheader {
 					display: grid;
 					grid-template-rows: auto auto;
 					grid-template-columns: unset;
 				}
-				#ending-table cell.header {
+				#ending-table :is(.header, .lheader){
 					display: block;
+					text-align: center;
 				}
 				#ending-table :is(.singular, .plural, examples) {
 					display: flex;
@@ -214,13 +216,14 @@
 
 				let cell = (t, c) => tab.insertAdjacentHTML("beforeend", `<cell class="cell${ c? " " + c:"" }">${t || ""}</cell>`)
 				let wrap = (t, c, elem = "span") => `<${elem}${ c? ` class="${c}"`: "" }>${t}</${elem}>`
-				let end = t => `<ending>${t == ""? "Ø": t}</ending>`
+				let empty = () => `<span title="empty ending">Ø</span>`
+				let end = t => `<ending>${t == ""? empty(): t}</ending>`
 				let end2 = d => Array.isArray(d)? `<div>${ end(d[0]) + " / " + end(d[1]) }</div>`: end(d)
 				let boxed = t => wrap(t, "boxed")
 
 				let listels = (l, tag) => l.map(w => `<${tag}>${w}</${tag}>`).join("\n")
 				let list = (l, tag) => `<${tag}s>${listels(l, tag)}</${tag}s>`
-				let caseq = d => cell(`${d[0]}${list(d.slice(1), "question")}`, "caseq")
+				let lheader = d => cell(`<div class="case">${d[0]}</div>${list(d.slice(1), "question")}`, "lheader")
 
 				let isarr = Array.isArray
 				let exend = (e, w) => !isarr(e)? e: !isarr(w)? e[0]: w[1]
@@ -228,7 +231,6 @@
 
 
 				let examps = (e, ws) => `<examples>${ ws.map(w => exword(e, w)).join("") }</examples>`
-				//let ending = (d, c, i, j) => `<plurarity class="${c}">${ end2(d) }${ examps(d, examples[j]) }</plurarity>`
 				let ending = (d, c, i, j) => end2(d) + examps(d, examples[j])
 				let both = (d, i, j) => cell(ending(d[0], "singular", i, j) + ending(d[1], "plural", i, j))
 
@@ -243,7 +245,7 @@
 
 					for (const [j, pl] of row.entries()) {
 						if (j == 0) {
-							caseq(pl)
+							lheader(pl)
 							continue
 						}
 
@@ -282,11 +284,13 @@
 					//grid-template-columns: 1fr;
 					//grid-template-rows: 1fr;
 					gap: 10px;
+
+					text-align: center;
 				}
 				broj div {
 					//display: flex;
-					justify-content: center;
-					align-items: flex-end;
+				//	justify-content: center;
+				//	align-items: flex-end;
 				}
 				#broj .lost {
 					color: #c00;
@@ -418,6 +422,25 @@
 		<copyright>nikandfor, 2025</copyright>
 	</footer>
 	<script>
+		document.addEventListener("copy", (e) => {
+			let t = document.getSelection()
+			e.clipboardData.setData('text/plain', t.toString())
+			e.preventDefault()
+		})
+	/*	document.addEventListener("paste", (e) => {
+			let ev = (e.clipboardData || window.clipboardData)
+			let t = ev.getData("text")
+
+			console.log('paste', t, ev, ev.types, ev.getData('text'))
+			for (const it of ev.items) {
+				console.log("paste item", it.kind, it.type)
+				const q = it
+				it.getAsString(s => console.log("item val", q.kind, q.type, s, q))
+			}
+
+			e.preventDefault()
+		}) */
+
 		document.addEventListener('DOMContentLoaded', function() {
 		})
 	</script>
