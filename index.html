@@ -20,7 +20,7 @@
 	<main id="main">
 		<page id="alphabet">
 			<h2>Alphabet</h2>
-			<div id="alphabet-table" class="wide"></div>
+			<div id="alphabet-table" class="grid wide"></div>
 			<style>
 				#alphabet-table {
 					display: grid;
@@ -273,7 +273,7 @@
 			<style>
 				#broj-table {
 					display: grid;
-					grid-template-columns: 1fr 1fr 1fr 1fr;
+					grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
 					gap: 10px;
 					//max-width: 800px;
 					margin: auto;
@@ -352,32 +352,14 @@
 					addHTMLCell(`<div style="grid-column-end: span ${cols}"></div>`)
 				}
 
-				if (false) {
-					addNumCell(0)
-					addNumCell(10)
-					//addSpanCell(3)
-					addNumCell(0)
-					addNumCell(0)
-					addNumCell(0)
-				}
-
 				for (let i = 1; i < 10; i++) {
-					for (const b of [1, 0, 10, 100]) {
+					for (const b of [1, 0, 10, 100, 1000]) {
 						let v = b == 0? 10 + i: b * i
 
 					//	console.log("broj", b, i, v)
 
 						addNumCell(v)
 					}
-				}
-
-				if (false) {
-					addNumCell(10)
-					addNumCell(20)
-					addNumCell(100)
-					addNumCell(1000)
-					//addNumCell(10000)
-					addTextCell("over 9000")
 				}
 
 				document.getElementById("broj-table-ordinal").onchange = function() {
@@ -414,6 +396,218 @@
 
 				}
 			</script>
+		</page>
+		<page id="words">
+			<h2>Basic words</h2>
+			<div id="words-table" class="grid">
+				<div class="list cell">
+					<div>Ovaj, ova, ovo</div>
+					<div>Taj, ta, to</div>
+					<div>Onaj, ona, ono</div>
+				</div>
+				<div class="list cell">
+					<div>Ovde</div>
+					<div>Tamo</div>
+					<div>Ovamo</div>
+					<div>Onamo</div>
+					<div>Tu</div>
+					<div>Onde</div>
+				</div>
+				<div class="list cell">
+					<div>Dan</div>
+					<div>Nedelja</div>
+					<div>Mesec</div>
+					<div>Godina</div>
+				</div>
+				<div class="list cell">
+					<div>Prekjuče</div>
+					<div>Juče</div>
+					<div class="today">Danas</div>
+					<div>Sutra</div>
+					<div>Prekosutra</div>
+				</div>
+				<div id="nedelja" class="list cell">
+					<div>Ponedeljak</div>
+					<div>Utorak</div>
+					<div>Sreda</div>
+					<div>Četvrtak</div>
+					<div>Petak</div>
+					<div>Subota</div>
+					<div>Nedelja</div>
+				</div>
+				<div class="list cell">
+					<div class="color c-white">Bela</div>
+					<div class="color c-black">Crna</div>
+					<div class="color c-gray">Siva</div>
+					<div class="color c-red">Crvena</div>
+					<div class="color c-green">Zelena</div>
+					<div class="color c-blue">Plava</div>
+				</div>
+				<div class="list cell">
+					<div class="color c-yellow">Žuta</div>
+					<div class="color c-orange">Narandžasta</div>
+					<div class="color c-violet">Ljubičasta</div>
+					<div class="color c-pink">Roze</div>
+					<div class="color c-brown">Braon</div>
+				</div>
+			</div>
+			<style>
+				#words-table {
+					display: grid;
+					grid-template-columns: repeat(auto-fit, minmax(130px, auto));
+				}
+				#words-table .today::after {
+					content: '←';
+					padding-left: 1em;
+				}
+				#words-table .list {
+					display: grid;
+					grid-auto-rows: min-content;
+					padding: 5px;
+					padding-left: 10px;
+				}
+				#words-table .color::before {
+					content: ' ';
+					display: inline-block;
+					width: 0.75em;
+					height: 0.75em;
+					margin-right: 10px;
+					border-radius: 5px;
+					border: black 1px solid;
+				}
+				#words-table .c-white::before { background: white; }
+				#words-table .c-black::before { background: black; }
+				#words-table .c-gray::before { background: gray; }
+				#words-table .c-red::before { background: red; }
+				#words-table .c-green::before { background: green; }
+				#words-table .c-blue::before { background: blue; }
+				#words-table .c-yellow::before { background: yellow; }
+				#words-table .c-orange::before { background: orange; }
+				#words-table .c-violet::before { background: violet; }
+				#words-table .c-pink::before { background: pink; }
+				#words-table .c-brown::before { background: brown; }
+			</style>
+			<script>
+				{
+					let list = document.getElementById("nedelja")
+
+					list.children[(new Date().getDay() + 6) % 7].classList.add("today")
+				}
+			</script>
+		</page>
+		<page id="vocabulary" style="display: none">
+			<h2>Vocabulary</h2>
+			<form id="voca-guess-start-form"><fieldset>
+				<legend>Train</legend>
+				<label>Guess <select id="voca-guess-side">
+					<option value="src">english</option>
+					<option value="dst">serbian</option>
+				</select> word</label>
+				<label>translating <select id="voca-guess-dir">
+					<option value="en-sr">english to serbian</option>
+					<!--<option value="sr-en">serbian to english</option>
+					<option value="any">both</option>-->
+				</select>.</label>
+				<label>Answer as: <select id="voca-guess-mode">
+					<option value="src">raw text</option>
+					<option value="dst">reorder letters</option>
+					<option value="dst">choose of options</option>
+				</select>.</label>
+				<button id="voca-guess-run" type="submit">Start</button>
+			</fieldset></form>
+			<div id="voca-guess" class="wide">
+			<form id="voca-guess-form">
+				<div class="known"><input id="voca-guess-quest" readonly></div>
+				<div class="unknown">
+					<input id="voca-guess-resp" type="text">
+				</div>
+				<button type="submit">ok</button>
+			</form>
+			</div>
+			<style>
+				#voca-table {
+					display: grid;
+					grid-template-columns: auto auto;
+					gap: 10px;
+					//max-width: 800px;
+					margin: auto;
+				}
+				#voca-add { display: none; }
+			</style>
+			<script>
+				{
+					let tab = document.getElementById("voca-guess")
+					let form = document.getElementById("voca-guess-start-form")
+					let sideEl = document.getElementById("voca-guess-side")
+					let dirEl = document.getElementById("voca-guess-dir")
+
+					let respForm = document.getElementById("voca-guess-form")
+					let quest = document.getElementById("voca-guess-quest")
+					let resp = document.getElementById("voca-guess-resp")
+
+					let clear = () => tab.innerHTML = ""
+					let add = t => tab.insertAdjacentHTML("beforeend", t)
+
+					const alpha = 0.8
+
+					let batch, mode
+					let getQ, getA
+					let state
+
+					let setup = () => {
+						getQ = w => w.src
+						getA = w => w.dst
+
+						batch = words[0]
+						state = batch.map(w => ({"src": w.src, "dst": w.dst, "ok": 0}))
+
+						next()
+					}
+
+					let next = () => {
+						console.log("next", state)
+						let w = batch[0]
+
+						quest.value = getQ(w)
+						//resp.value = w.src
+					}
+
+					let ok = () => {
+						let w = batch[0]
+						let ok = (resp.value == getA(w)) + 0
+
+						w.ok = w.ok * alpha + ok * (1 - alpha)
+						state.sort((l, r) => l.ok - r.ok)
+
+						next()
+					}
+
+					form.onsubmit = setup
+
+					respForm.onsubmit = ok
+				}
+			</script>
+
+			<fieldset id="voca-add">
+				<legend>Add new translation</legend>
+				<span class="nowrap">
+					<select id="voca-add-src-lang">
+						<option value="en">en</option>
+						<option value="sr">sr</option>
+					</select>
+					<input id="voca-add-src" type="text" required>
+				</span>
+				=>
+				<span class="nowrap">
+				<select id="voca-add-dst-lang">
+					<option value="en">en</option>
+					<option value="sr" selected>sr</option>
+				</select>
+				<input id="voca-add-dst" type="text" required>
+				</span>
+
+				<input id="voca-add-submit" type="submit">
+			</fieldset>
 		</page>
 	</main>
 	<footer class="three-row">

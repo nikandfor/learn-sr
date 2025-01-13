@@ -42,6 +42,10 @@ page {
 	overflow-x: scroll;
 }
 
+.grid {
+	gap: 10px;
+}
+
 .cell {
 	background: #f2f2f2;
 	padding: 0.4em;

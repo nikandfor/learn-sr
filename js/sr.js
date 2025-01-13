@@ -67,42 +67,38 @@ const Number = function() {
 	const names = ["nula", "jedan", "dva", "tri", "četiri", "pet", "šest", "sedam", "osam", "devet", "deset"]
 	const bases = {1: "", 10: "deset", 100: "sto", 1000: "hiljada"}
 	const ordinals = ["nulti", "prvi", "drugi", "treći", "četvrti", "peti", "šesti", "sedmi", "osmi", "deveti", "deseti"]
-	const obases = {1: "", 10: "deseti", 100: "stoti", 1000: "hiljadati"}
+	const obases = {1: "", 10: "deseti", 100: "stoti", 1000: "hiljaditi"}
+	const complex = ["nula", "prvo", "dvo", "tro", "četvoro", "petoro", "šestoro", "sedmoro", "osmoro", "devetoro", "desetoro"]
 
 	const exc = new Map()
 
-	exc.set("11", {
-		[NumberTextFormat.Text]: "jeda",
-		[NumberTextFormat.HTML]: "jeda" + lost("n"),
-	})
-	exc.set("14", {
-		[NumberTextFormat.Text]: "četr",
-		[NumberTextFormat.HTML]: "čet" + lost("i") + "r" + lost("i"),
-	})
+	const getexc = (exc, v, hh) => {
+		let e = exc.get(v)
+		if (!e) return
+
+		if (!hh) return e.filter(p => typeof p === "string").join("")
+
+		return e.map(p => typeof p === "string"? p: p[0] == "l"? lost(p[1]): repl(p[1])).join("")
+	}
+
+	exc.set("11", ["jeda", ["l", "n"]])
+	exc.set("14", ["čet", ["l", "i"], "r", ["l", "i"]])
 	exc.set("40", exc.get(14))
-	exc.set("50", {
-		[NumberTextFormat.Text]: "pe",
-		[NumberTextFormat.HTML]: "pe" + lost("t"),
-	})
-	exc.set("16", {
-		[NumberTextFormat.Text]: "šes",
-		[NumberTextFormat.HTML]: "šes" + lost("t"),
-	})
-	exc.set("60", {
-		[NumberTextFormat.Text]: "šez",
-		[NumberTextFormat.HTML]: "še" + repl("z"),
-	})
-	exc.set("90", {
-		[NumberTextFormat.Text]: "deve",
-		[NumberTextFormat.HTML]: "deve" + lost("t"),
-	})
+	exc.set("50", ["pe", ["l", "t"]])
+	exc.set("60", ["še", ["r", "z"]])
+	exc.set("90", ["deve", ["l", "t"]])
+	exc.set("200", ["dv", ["r", "e"]])
+	exc.set("2000", ["dv", ["r", "e"]])
 
-	exc.set("200", {
-		[NumberTextFormat.Text]: "dve",
-		[NumberTextFormat.HTML]: "dv" + repl("e"),
-	})
+	const excOrd = new Map()
 
-	const baseExc = new Map()
+	excOrd.set("4000", ["čet", ["r", "voro"]])
+	excOrd.set("5000", ["pet", ["r", "o"]])
+	excOrd.set("6000", ["šes", ["r", "to"]])
+	excOrd.set("7000", ["sed", ["r", "mo"]])
+	excOrd.set("8000", ["os", ["r", "mi"]])
+	excOrd.set("9000", ["devet", ["r", "o"]])
+	excOrd.set("10000", ["deset", ["r", "o"]])
 
 	function c(v, cfg = {}) {
 		if (typeof parseInt(v) != "number" || isNaN(v) || !isFinite(v)) return "wtf: " + v
@@ -114,26 +110,37 @@ const Number = function() {
 
 		const html = (c, o) => `<span class="card">${c}</span><span class="ord">${o}</span>`
 
-		const name = (v, def) => {
+		const name = (v, mod) => {
 			v = v + ""
 
-			let e = exc.get(v)
+			let e = getexc(exc, v, hh)
 			if (e) {
-				return e[tf]
+				return e
 			}
+
+			let eo = getexc(excOrd, v, hh)
+			if (ord && eo) return eo
+			if (hh && eo) return html(names[mod], eo)
 
 			if (hh && v < 10) {
-				return html(names[def], ordinals[def])
+				return html(names[mod], ordinals[mod])
 			}
 
-			return ord? ordinals[def]: names[def]
+			return ord? ordinals[mod]: names[mod]
 		}
 
-		const baseName = (b, def) => {
+		const baseName = (b, mod) => {
 			const bn = ord => {
+				if (!ord && mod == 1000) {
+					if (b == 1000) return bases[mod]
+					if (b >= 2000 && b <= 4000) return " " + bases[mod].slice(0, -1) + repl("e")
+
+					return " " + bases[mod]
+				}
+
 				if (!ord && (b == 200 || b == 300)) return "st" + (hh? repl("a"):"")
 
-				return ord? obases[def]: bases[def]
+				return ord? obases[mod]: bases[mod]
 			}
 
 			return hh? html(bn(false), bn(true)): bn(ord)
