@@ -11,7 +11,6 @@
 	<link rel="stylesheet" href="css/style.css">
 
 	<script src="js/sr.js"></script>
-	<script src="js/words.js"></script>
 </head>
 <body>
 	<header class="three-row">
@@ -495,96 +494,269 @@
 				}
 			</script>
 		</page>
-		<page id="vocabulary" style="display: none">
+		<page id="vocabulary">
 			<h2>Vocabulary</h2>
 			<form id="voca-guess-start-form"><fieldset>
 				<legend>Train</legend>
 				<label>Guess <select id="voca-guess-side">
-					<option value="src">english</option>
 					<option value="dst">serbian</option>
+					<option value="src">english</option>
 				</select> word</label>
 				<label>translating <select id="voca-guess-dir">
 					<option value="en-sr">english to serbian</option>
-					<!--<option value="sr-en">serbian to english</option>
-					<option value="any">both</option>-->
 				</select>.</label>
 				<label>Answer as: <select id="voca-guess-mode">
 					<option value="src">raw text</option>
 					<option value="dst">reorder letters</option>
 					<option value="dst">choose of options</option>
 				</select>.</label>
+				<label>Take <input id="voca-guess-batch" style="width: 5ch;" value="10" type="number"> words per game.</label>
 				<button id="voca-guess-run" type="submit">Start</button>
 			</fieldset></form>
-			<div id="voca-guess" class="wide">
-			<form id="voca-guess-form">
-				<div class="known"><input id="voca-guess-quest" readonly></div>
-				<div class="unknown">
-					<input id="voca-guess-resp" type="text">
+			<form id="voca-guess-form" class="hide padding">
+				<div id="voca-guess" class="grid wide">
+					<div id="voca-guess-last-quest" class="cell hide"></div>
+					<div id="voca-guess-last-resp" class="cell hide">
+						<span id="voca-guess-last-fail" class="incorrect"></span>
+						<span id="voca-guess-last-ok" class="correct"></span>
+					</div>
+					<div id="voca-guess-quest" class="cell"></div>
+					<input id="voca-guess-resp" class="cell" placeholder="your guess"></input>
 				</div>
-				<button type="submit">ok</button>
+				<div class="controls padding"><button id="voca-guess-giveup" type="button">don't know</button><button type="submit">ok</button></div>
 			</form>
-			</div>
+			<div id="voca-list" class="grid wide hide padding"></div>
 			<style>
-				#voca-table {
-					display: grid;
-					grid-template-columns: auto auto;
-					gap: 10px;
-					//max-width: 800px;
-					margin: auto;
+				#vocabulary .hide { display: none; }
+				#vocabulary .padding { margin-top: 10px; }
+				#vocabulary .controls { text-align: center; }
+				#vocabulary .controls button { margin: 0 5px; }
+				#vocabulary input {
+					border: none;
+					font-size: inherit;
 				}
+				#voca-guess {
+					display: grid;
+					grid-template-columns: 1fr 1fr;
+				}
+				#voca-list {
+					display: grid;
+					grid-template-columns: 1fr 1fr;
+				}
+				#voca-guess .incorrect { background: #f002; }
+				#voca-guess .correct { background: #0f02; }
 				#voca-add { display: none; }
 			</style>
 			<script>
 				{
-					let tab = document.getElementById("voca-guess")
-					let form = document.getElementById("voca-guess-start-form")
+					let startForm = document.getElementById("voca-guess-start-form")
 					let sideEl = document.getElementById("voca-guess-side")
 					let dirEl = document.getElementById("voca-guess-dir")
+					let batchEl = document.getElementById("voca-guess-batch")
 
-					let respForm = document.getElementById("voca-guess-form")
+					let gameForm = document.getElementById("voca-guess-form")
+					let giveup = document.getElementById("voca-guess-giveup")
 					let quest = document.getElementById("voca-guess-quest")
 					let resp = document.getElementById("voca-guess-resp")
+					let lastQ = document.getElementById("voca-guess-last-quest")
+					let lastResp = document.getElementById("voca-guess-last-resp")
+					let lastOk = document.getElementById("voca-guess-last-ok")
+					let lastFail = document.getElementById("voca-guess-last-fail")
+
+					let tab = document.getElementById("voca-list")
+
+					let words = null
 
 					let clear = () => tab.innerHTML = ""
 					let add = t => tab.insertAdjacentHTML("beforeend", t)
+					let cell = t => `<div class="cell">${t}</div>`
+					let pair = (l, r) => cell(l) + cell(r)
+
+					let score = w => w.ok + w.fail
 
 					const alpha = 0.8
+					const eps = 0.001
 
+					let fetchDoc = async (url) => {
+						try {
+							let resp = await fetch(url);
+							if (!resp.ok) {
+								console.error("load", url, resp.status)
+								return null
+							}
+
+							let doc = await resp.json()
+
+							return doc
+						} catch (err) {
+							console.error("load", url, err)
+							return null
+						}
+					}
+					let fetchWords = async () => {
+						if (words) return
+
+						words = await fetchDoc("https://sr-data.nikand.dev/words.json")
+
+						console.log("words", words && words.length)
+					}
+
+					let mem = JSON.parse((window.localStorage || {}).getItem("words") || "{}")
+					let memkey = w => w.src + "=" + w.dst
+					let memget = w => mem[memkey(w)] || {}
+					let memset = w => {
+						mem[memkey(w)] = {"ok": w.ok, "fail": w.fail}
+
+						window.localStorage.setItem("words", JSON.stringify(mem))
+					}
+
+					let cmp = (a, b) => {
+						const sub = {"š": "s", "đ": "d", "ž": "z", "č": "c", "ć": "c"}
+						if (a.length != b.length) return false
+
+						let bold = c => sub[c] || c
+
+						for (let i = 0; i < a.length; i++) {
+							if (bold(a[i]) != bold(b[i])) return false
+						}
+
+						return true
+					}
+
+					let shufflePrefix = a => {
+						let end = 0
+
+						while (end < a.length && Math.abs(score(a[0]) - score(a[end])) < eps) {
+							end++
+						}
+
+						for (let i = 0; i < end; i++) {
+							let j = Math.floor(Math.random() * end)
+
+							{ [a[i], a[j]] = [a[j], a[i]] }
+						}
+					}
+
+					let offset = 0
 					let batch, mode
 					let getQ, getA
 					let state
 
-					let setup = () => {
-						getQ = w => w.src
-						getA = w => w.dst
+				//	document.onselect = e => console.log("onselect", e)
+				//	document.addEventListener('focusin', e => console.log("focusin", e.target, e), true)
+				//	document.addEventListener('focusout', e => console.log("focusout", e.target, e), true)
 
-						batch = words[0]
-						state = batch.map(w => ({"src": w.src, "dst": w.dst, "ok": 0}))
+					let batchDone = b => b[0].ok > 0.95
+					let batchSort = b => {
+						b.sort((l, r) => score(l) - score(r))
+						shufflePrefix(b)
+					}
+
+					let setup = async () => {
+						await fetchWords()
+
+						if (!words || words.length == 0) {
+							console.error("no words")
+							return
+						}
+
+						gameForm.classList.remove("hide")
+
+						let page = parseInt(batchEl.value) || 10
+
+						if (sideEl.value == "dst") {
+							getQ = w => w.src
+							getA = w => w.dst
+						} else {
+							getQ = w => w.dst
+							getA = w => w.src
+						}
+
+						while (true) {
+							batch = words.slice(offset, offset + page)
+							state = batch.map(w => {
+								let m = memget(w)
+
+								return {"src": w.src, "dst": w.dst, "ok": m.ok || 0, "fail": m.fail || 0}
+							})
+
+							batchSort(state)
+
+							if (!batchDone(state)) break
+
+							offset += page
+						}
 
 						next()
+					}
+
+					let finish = () => {
+						gameForm.classList.add("hide")
+
+						clear()
+
+						for (let w of state) {
+							add(pair(getQ(w), getA(w)))
+						}
 					}
 
 					let next = () => {
-						console.log("next", state)
-						let w = batch[0]
+						batchSort(state)
 
-						quest.value = getQ(w)
-						//resp.value = w.src
+						let w = state[0]
+
+						console.log("next", state)
+
+						resp.value = ""
+
+						if (batchDone(batch)) {
+							finish()
+
+							return
+						}
+
+						quest.innerText = getQ(w)
+						resp.select()
+						resp.focus()
 					}
 
-					let ok = () => {
-						let w = batch[0]
-						let ok = (resp.value == getA(w)) + 0
+					let ok = (req) => {
+						let w = state[0]
+						let res = resp.value
+						let ok = cmp(res, getA(w))
 
+						if (req && !res) { return }
+
+						if (!ok) { w.fail += 0.05 }
 						w.ok = w.ok * alpha + ok * (1 - alpha)
-						state.sort((l, r) => l.ok - r.ok)
+
+						lastQ.innerText = quest.innerText
+						lastOk.innerText = getA(w)
+
+						if (!ok) {
+							lastFail.innerText = res || "(no response)"
+							lastFail.classList.remove("hide")
+						} else {
+							lastFail.classList.add("hide")
+						}
+
+						quest.innerText = ""
+						resp.value = ""
+
+						lastQ.classList.remove("hide")
+						lastResp.classList.remove("hide")
+
+						memset(w)
 
 						next()
 					}
 
-					form.onsubmit = setup
+					startForm.onsubmit = e => { e.preventDefault(); setup() }
+					gameForm.onsubmit = e => { e.preventDefault(); ok(true) }
+					giveup.onclick = e => { e.preventDefault(); ok(false) }
 
-					respForm.onsubmit = ok
+				//	setup()
+				//	resp.value = "da"
 				}
 			</script>
 

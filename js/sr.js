@@ -85,6 +85,7 @@ const Number = function() {
 	exc.set("14", ["čet", ["l", "i"], "r", ["l", "i"]])
 	exc.set("40", exc.get(14))
 	exc.set("50", ["pe", ["l", "t"]])
+	exc.set("16", ["šes", ["l", "t"]])
 	exc.set("60", ["še", ["r", "z"]])
 	exc.set("90", ["deve", ["l", "t"]])
 	exc.set("200", ["dv", ["r", "e"]])
