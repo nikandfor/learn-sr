@@ -510,6 +510,7 @@
 					<option value="dst">reorder letters</option>
 					<option value="dst">choose of options</option>
 				</select>.</label>
+				<label>Strict match: <input id="voca-guess-strict" type="checkbox">.</label>
 				<label>Take <input id="voca-guess-batch" style="width: 5ch;" value="10" type="number"> words per game.</label>
 				<button id="voca-guess-run" type="submit">Start</button>
 			</fieldset></form>
@@ -553,6 +554,7 @@
 					let sideEl = document.getElementById("voca-guess-side")
 					let dirEl = document.getElementById("voca-guess-dir")
 					let batchEl = document.getElementById("voca-guess-batch")
+					let strictEl = document.getElementById("voca-guess-strict")
 
 					let gameForm = document.getElementById("voca-guess-form")
 					let giveup = document.getElementById("voca-guess-giveup")
@@ -610,14 +612,17 @@
 						window.localStorage.setItem("words", JSON.stringify(mem))
 					}
 
-					let cmp = (a, b) => {
+					let cmp = (exp, got) => {
 						const sub = {"š": "s", "đ": "d", "ž": "z", "č": "c", "ć": "c"}
-						if (a.length != b.length) return false
+						const bald = c => sub[c] || c
 
-						let bold = c => sub[c] || c
+						let strict = strictEl.checked
 
-						for (let i = 0; i < a.length; i++) {
-							if (bold(a[i]) != bold(b[i])) return false
+						if (strict && exp != got) return false
+						if (exp.length != got.length) return false
+
+						for (let i = 0; i < exp.length; i++) {
+							if (bald(exp[i]) != bald(got[i])) return false
 						}
 
 						return true
@@ -722,8 +727,8 @@
 
 					let ok = (req) => {
 						let w = state[0]
-						let res = resp.value
-						let ok = cmp(res, getA(w))
+						let res = resp.value.trim()
+						let ok = cmp(getA(w), res)
 
 						if (req && !res) { return }
 
@@ -787,6 +792,16 @@
 		<div></div>
 		<copyright>nikandfor, 2025</copyright>
 	</footer>
+	<style>
+		.header-link {
+			visibility: hidden;
+			padding-left: 10px;
+			text-decoration: none;
+		}
+		h2:hover .header-link {
+			visibility: visible;
+		}
+	</style>
 	<script>
 		document.addEventListener("copy", (e) => {
 			let t = document.getSelection()
@@ -806,6 +821,12 @@
 
 			e.preventDefault()
 		}) */
+
+		document.querySelectorAll("page > h2").forEach(e => {
+			let page = e.closest("page")
+
+			e.insertAdjacentHTML("beforeend", `<a href="#${page.id}" class="header-link">🔗</a>`)
+		})
 
 		document.addEventListener('DOMContentLoaded', function() {
 		})
