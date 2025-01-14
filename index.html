@@ -288,10 +288,8 @@
 
 					text-align: center;
 				}
-				broj div {
-					//display: flex;
-				//	justify-content: center;
-				//	align-items: flex-end;
+				broj .broj-word {
+					white-space: nowrap;
 				}
 				#broj .lost {
 					color: #c00;
@@ -343,7 +341,7 @@
 				}
 
 				function addNumCell(v) {
-						addHTMLCell(`<div>${v}<span class="ord">.</span></div><div>${
+						addHTMLCell(`<div>${v}<span class="ord">.</span></div><div class="broj-word">${
 					new NumberGrammatics(v).toString({
 						NumberTextFormat: NumberTextFormat.HTML,
 					})}</div>`)
@@ -581,7 +579,7 @@
 
 					let score = w => w.ok + w.fail
 
-					const alpha = 0.8
+					const alpha = 0.6
 					const eps = 0.001
 
 					let fetchDoc = async (url) => {
