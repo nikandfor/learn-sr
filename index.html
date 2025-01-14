@@ -317,7 +317,7 @@
 				let calcOrd = document.getElementById("broj-calc-ordinal")
 
 				let calc = function(e, val) {
-					calcRes.innerHTML = new Number(val || this.value).toString({
+					calcRes.innerHTML = new NumberGrammatics(val || this.value).toString({
 						NumberTextFormat: NumberTextFormat.HTML,
 					//	NumberType: calcOrd.checked? NumberType.Ordinal: NumberType.Cardinal,
 					})
@@ -342,7 +342,7 @@
 
 				function addNumCell(v) {
 						addHTMLCell(`<div>${v}<span class="ord">.</span></div><div>${
-					new Number(v).toString({
+					new NumberGrammatics(v).toString({
 						NumberTextFormat: NumberTextFormat.HTML,
 					})}</div>`)
 				}
@@ -846,6 +846,7 @@
 		document.addEventListener('DOMContentLoaded', function() {
 		})
 	</script>
+
 	<!-- Google tag (gtag.js) -->
 	<script async src="https://www.googletagmanager.com/gtag/js?id=G-LXPWYD182Y"></script>
 	<script>

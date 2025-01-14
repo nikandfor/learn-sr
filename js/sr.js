@@ -59,7 +59,7 @@ const NumberTextFormat = Object.freeze({
 	HTML: Symbol("html"),
 })
 
-const Number = function() {
+const NumberGrammatics = function() {
 	const wrap = (t, cl, hh) => hh? `<span class="${cl}">${t}</span>`: t
 	const lost = t => wrap(t, "lost", true)
 	const repl = t => wrap(t, "replaced", true)
