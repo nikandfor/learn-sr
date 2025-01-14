@@ -511,11 +511,11 @@
 					<option value="dst">choose of options</option>
 				</select>.</label>
 				<label>Strict match: <input id="voca-guess-strict" type="checkbox">.</label>
-				<label>Take <input id="voca-guess-batch" style="width: 5ch;" value="10" type="number"> words per game.</label>
+				<label>Take <input id="voca-guess-batch" style="width: 3ch;" value="10" type="number" max="100"> words per game.</label>
 				<button id="voca-guess-run" type="submit">Start</button>
 			</fieldset></form>
-			<form id="voca-guess-form" class="hide padding">
-				<div id="voca-guess" class="grid wide">
+			<form id="voca-guess" class="hide">
+				<div id="voca-guess-table" class="grid wide">
 					<div id="voca-guess-last-quest" class="cell hide"></div>
 					<div id="voca-guess-last-resp" class="cell hide">
 						<span id="voca-guess-last-fail" class="incorrect"></span>
@@ -530,22 +530,25 @@
 			<style>
 				#vocabulary .hide { display: none; }
 				#vocabulary .padding { margin-top: 10px; }
-				#vocabulary .controls { text-align: center; }
-				#vocabulary .controls button { margin: 0 5px; }
-				#vocabulary input {
+				#voca-guess {
+					padding: 10px 0;
+				}
+				#voca-guess input {
 					border: none;
 					font-size: inherit;
 				}
-				#voca-guess {
-					display: grid;
-					grid-template-columns: 1fr 1fr;
-				}
-				#voca-list {
+				#voca-guess-table {
 					display: grid;
 					grid-template-columns: 1fr 1fr;
 				}
 				#voca-guess .incorrect { background: #f002; }
 				#voca-guess .correct { background: #0f02; }
+				#voca-guess .controls { text-align: center; }
+				#voca-guess .controls button { margin: 0 5px; }
+				#voca-list {
+					display: grid;
+					grid-template-columns: 1fr 1fr;
+				}
 				#voca-add { display: none; }
 			</style>
 			<script>
@@ -556,7 +559,7 @@
 					let batchEl = document.getElementById("voca-guess-batch")
 					let strictEl = document.getElementById("voca-guess-strict")
 
-					let gameForm = document.getElementById("voca-guess-form")
+					let gameForm = document.getElementById("voca-guess")
 					let giveup = document.getElementById("voca-guess-giveup")
 					let quest = document.getElementById("voca-guess-quest")
 					let resp = document.getElementById("voca-guess-resp")
@@ -800,6 +803,18 @@
 		}
 		h2:hover .header-link {
 			visibility: visible;
+		}
+
+		/* Chrome, Safari, Edge, Opera */
+		input::-webkit-outer-spin-button,
+		input::-webkit-inner-spin-button {
+			-webkit-appearance: none;
+			margin: 0;
+		}
+
+		/* Firefox */
+		input[type=number] {
+			-moz-appearance: textfield;
 		}
 	</style>
 	<script>
