@@ -512,6 +512,8 @@
 				</select>.</label>
 				<label>Strict match: <input id="voca-guess-strict" type="checkbox">.</label>
 				<label>Take <input id="voca-guess-batch" style="width: 3ch;" value="10" type="number" max="100"> words per game.</label>
+				<input id="voca-guess-alpha" class="debug" type="hidden" value="0.55">
+				<textarea id="voca-guess-words" class="debug"></textarea>
 				<button id="voca-guess-run" type="submit">Start</button>
 			</fieldset></form>
 			<form id="voca-guess" class="hide">
@@ -522,7 +524,10 @@
 						<span id="voca-guess-last-ok" class="correct"></span>
 					</div>
 					<div id="voca-guess-quest" class="cell"></div>
-					<input id="voca-guess-resp" class="cell" placeholder="your guess"></input>
+					<div id="voca-guess-resp" class="cell">
+						<input id="voca-guess-resp-data" placeholder="your guess"></input>
+						<div id="voca-guess-tip"></div>
+					</div>
 				</div>
 				<div class="controls padding"><button id="voca-guess-giveup" type="button">don't know</button><button type="submit">ok</button></div>
 			</form>
@@ -541,6 +546,16 @@
 					display: grid;
 					grid-template-columns: 1fr 1fr;
 				}
+				#voca-guess-resp {
+					display: grid;
+					grid-template-columns: auto max-content;
+				}
+				#voca-guess-tip {
+					padding-left: 10px;
+				}
+				#voca-guess-tip:empty {
+					display: none;
+				}
 				#voca-guess .incorrect { background: #f002; }
 				#voca-guess .correct { background: #0f02; }
 				#voca-guess .controls { text-align: center; }
@@ -558,11 +573,13 @@
 					let dirEl = document.getElementById("voca-guess-dir")
 					let batchEl = document.getElementById("voca-guess-batch")
 					let strictEl = document.getElementById("voca-guess-strict")
+					let alphaEl = document.getElementById("voca-guess-alpha")
 
 					let gameForm = document.getElementById("voca-guess")
 					let giveup = document.getElementById("voca-guess-giveup")
 					let quest = document.getElementById("voca-guess-quest")
-					let resp = document.getElementById("voca-guess-resp")
+					let resp = document.getElementById("voca-guess-resp-data")
+					let tip = document.getElementById("voca-guess-tip")
 					let lastQ = document.getElementById("voca-guess-last-quest")
 					let lastResp = document.getElementById("voca-guess-last-resp")
 					let lastOk = document.getElementById("voca-guess-last-ok")
@@ -579,7 +596,7 @@
 
 					let score = w => w.ok + w.fail
 
-					const alpha = 0.6
+				//	const alpha = 0.6
 					const eps = 0.001
 
 					let fetchDoc = async (url) => {
@@ -600,6 +617,12 @@
 					}
 					let fetchWords = async () => {
 						if (words) return
+
+						let e = document.getElementById("voca-guess-words")
+						if (e.value) {
+							words = JSON.parse(e.value)
+							return
+						}
 
 						words = await fetchDoc("https://sr-data.nikand.dev/words.json")
 
@@ -645,8 +668,7 @@
 						}
 					}
 
-					let offset = 0
-					let batch, mode
+					let mode
 					let getQ, getA
 					let state
 
@@ -654,7 +676,7 @@
 				//	document.addEventListener('focusin', e => console.log("focusin", e.target, e), true)
 				//	document.addEventListener('focusout', e => console.log("focusout", e.target, e), true)
 
-					let batchDone = b => b[0].ok > 0.95
+					let batchDone = b => b[0].ok >= 0.84
 					let batchSort = b => {
 						b.sort((l, r) => score(l) - score(r))
 						shufflePrefix(b)
@@ -668,10 +690,6 @@
 							return
 						}
 
-						gameForm.classList.remove("hide")
-
-						let page = parseInt(batchEl.value) || 10
-
 						if (sideEl.value == "dst") {
 							getQ = w => w.src
 							getA = w => w.dst
@@ -680,13 +698,25 @@
 							getA = w => w.src
 						}
 
+						let offset = 0
+						let page = parseInt(batchEl.value) || 10
+
+
 						while (true) {
-							batch = words.slice(offset, offset + page)
+							let batch = words.slice(offset, offset + page)
 							state = batch.map(w => {
 								let m = memget(w)
 
-								return {"src": w.src, "dst": w.dst, "ok": m.ok || 0, "fail": m.fail || 0}
+								return {
+									"src": w.src,
+									"dst": w.dst,
+									"ok": m.ok || 0,
+									"fail": m.fail || 0,
+									"tip": w.tip,
+								}
 							})
+
+							if (!state.length) break
 
 							batchSort(state)
 
@@ -694,6 +724,24 @@
 
 							offset += page
 						}
+
+						if (!state.length) {
+							console.log("you are too good")
+							return
+						}
+
+						state.forEach(w => {
+							let dups = words.filter(w2 => getQ(w2) == getQ(w) && getA(w2) != getA(w))
+							if (!dups || !dups.length) return
+
+							let alt = dups.map(w => getA(w))
+
+							alt = [...new Set(alt)]
+
+							w.alt = alt
+						})
+
+						gameForm.classList.remove("hide")
 
 						next()
 					}
@@ -717,29 +765,36 @@
 
 						resp.value = ""
 
-						if (batchDone(batch)) {
+						if (batchDone(state)) {
 							finish()
 
 							return
 						}
 
 						quest.innerText = getQ(w)
+						tip.innerText = w.tip? "*" + w.tip: ""
+
 						resp.select()
 						resp.focus()
 					}
 
 					let ok = (req) => {
+						const alpha = parseFloat(alphaEl.value) || 0.5
 						let w = state[0]
 						let res = resp.value.trim()
-						let ok = cmp(getA(w), res)
 
 						if (req && !res) { return }
+
+						let ok = cmp(getA(w), res)
+						if (!ok && w.alt) {
+							ok = !!w.alt.find(r => cmp(r, res))
+						}
 
 						if (!ok) { w.fail += 0.05 }
 						w.ok = w.ok * alpha + ok * (1 - alpha)
 
 						lastQ.innerText = quest.innerText
-						lastOk.innerText = getA(w)
+						lastOk.innerText = getA(w) + (w.alt? " or " + w.alt.join(", "): "")
 
 						if (!ok) {
 							lastFail.innerText = res || "(no response)"
@@ -750,6 +805,7 @@
 
 						quest.innerText = ""
 						resp.value = ""
+						tip.innerText = ""
 
 						lastQ.classList.remove("hide")
 						lastResp.classList.remove("hide")
@@ -816,8 +872,13 @@
 		input[type=number] {
 			-moz-appearance: textfield;
 		}
+
+		.debug {
+			display: none;
+		}
 	</style>
 	<script>
+		{
 		document.addEventListener("copy", (e) => {
 			let t = document.getSelection()
 			e.clipboardData.setData('text/plain', t.toString())
@@ -843,8 +904,17 @@
 			e.insertAdjacentHTML("beforeend", `<a href="#${page.id}" class="header-link">🔗</a>`)
 		})
 
+
+		let q = new URLSearchParams(window.location.search)
+
+		if (q.has("debug")) {
+			document.querySelectorAll(".debug").forEach(e => e.classList.remove("debug"))
+			document.getElementById("voca-guess-batch").max = 10000
+		}
+
 		document.addEventListener('DOMContentLoaded', function() {
 		})
+		}
 	</script>
 
 	<!-- Cloudflare Web Analytics -->
