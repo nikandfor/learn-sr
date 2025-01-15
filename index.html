@@ -513,7 +513,8 @@
 				<label>Strict match: <input id="voca-guess-strict" type="checkbox">.</label>
 				<label>Take <input id="voca-guess-batch" style="width: 3ch;" value="10" type="number" max="100"> words per game.</label>
 				<input id="voca-guess-alpha" class="debug" type="hidden" value="0.55">
-				<textarea id="voca-guess-words" class="debug"></textarea>
+				<label class="debug">Words: <textarea id="voca-guess-words"></textarea>,</label>
+				<label class="debug">or words url: <input id="voca-guess-words-url">.</label>
 				<button id="voca-guess-run" type="submit">Start</button>
 			</fieldset></form>
 			<form id="voca-guess" class="hide">
@@ -624,7 +625,10 @@
 							return
 						}
 
-						words = await fetchDoc("https://sr-data.nikand.dev/words.json")
+						let url = document.getElementById("voca-guess-words-url").value
+						url = url || "https://r2.nikand.dev/sr/words.json"
+
+						words = await fetchDoc(url)
 
 						console.log("words", words && words.length)
 					}
