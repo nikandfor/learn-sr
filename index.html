@@ -513,9 +513,10 @@
 			-->
 				<label>Strict match: <input id="voca-guess-strict" type="checkbox">.</label>
 				<label>Take <input id="voca-guess-batch" style="width: 3ch;" value="10" type="number" max="100"> words per game.</label>
-				<input id="voca-guess-alpha" class="debug" type="hidden" value="0.55">
+				<label>Alpha: <input id="voca-guess-alpha" class="debug" value="0.55">.</label>
+				<label>Target: <input id="voca-guess-target" class="debug" value="0.8"></label>
 				<label class="debug">Words: <textarea id="voca-guess-words"></textarea>,</label>
-				<label class="debug">or words url: <input id="voca-guess-words-url">.</label>
+				<label class="debug">or from url: <input id="voca-guess-words-url">.</label>
 				<button id="voca-guess-run" type="submit">Start</button>
 			</fieldset></form>
 			<form id="voca-guess" class="hide">
@@ -602,6 +603,7 @@
 					let batchEl = document.getElementById("voca-guess-batch")
 					let strictEl = document.getElementById("voca-guess-strict")
 					let alphaEl = document.getElementById("voca-guess-alpha")
+					let targetEl = document.getElementById("voca-guess-target")
 
 					let gameForm = document.getElementById("voca-guess")
 					let giveup = document.getElementById("voca-guess-giveup")
@@ -661,9 +663,9 @@
 					}
 
 					let mem = JSON.parse(window.localStorage.getItem("wordsProgress") || "{}")
-					let memget = w => mem[w.key] || {}
-					let memset = w => {
-						mem[w.key] = {"ok": w.ok, "fail": w.fail, "stats": w.stats}
+					let memget = key => mem[key] || {}
+					let memset = (key, w) => {
+						mem[key] = {"ok": w.ok, "fail": w.fail, "stats": w.stats}
 
 						window.localStorage.setItem("wordsProgress", JSON.stringify(mem))
 					}
@@ -699,8 +701,9 @@
 					}
 
 					let state
+					let alpha, target
 
-					let batchDone = b => b[0].ok >= 0.84
+					let batchDone = b => b[0].ok > target
 					let batchSort = b => {
 						b.sort((l, r) => l.score() - r.score())
 						shufflePrefix(b)
@@ -718,17 +721,19 @@
 						let offset = 0
 						let page = parseInt(batchEl.value) || 10
 
+						alpha = alphaEl.value
+						target = targetEl.value
+
 						while (true) {
 							let batch = words.slice(offset, offset + page)
 							state = batch.map(w => {
 								let sw = new WordState(w, dir)
+								let m = memget(sw.key)
 
-								sw.load(memget(sw.key))
+								sw.load(m)
 
 								return sw
 							})
-
-							console.log("batch", state, batch)
 
 							if (!state.length) break
 
@@ -794,7 +799,6 @@
 					}
 
 					let ok = (req) => {
-						const alpha = parseFloat(alphaEl.value) || 0.5
 						let w = state[0]
 						let res = resp.value.trim()
 
@@ -826,7 +830,7 @@
 						lastQ.classList.remove("hide")
 						lastResp.classList.remove("hide")
 
-						memset(w)
+						memset(w.key, w)
 
 						next()
 					}
@@ -835,8 +839,20 @@
 					gameForm.onsubmit = e => { e.preventDefault(); ok(true) }
 					giveup.onclick = e => { e.preventDefault(); ok(false) }
 
-				//	setup()
-				//	resp.value = "da"
+					let q = new URLSearchParams(window.location.search)
+
+					if (q.has("voca-alpha")) {
+						alphaEl.value = q.get("voca-alpha")
+					}
+					if (q.has("voca-target")) {
+						targetEl.value = q.get("voca-target")
+					}
+					if (q.has("voca-batch")) {
+						batchEl.value = q.get("voca-batch")
+					}
+					if (q.has("voca-strict")) {
+						strictEl.checked = true
+					}
 				}
 			</script>
 
