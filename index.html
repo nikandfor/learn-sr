@@ -513,8 +513,8 @@
 			-->
 				<label>Strict match: <input id="voca-guess-strict" type="checkbox">.</label>
 				<label>Take <input id="voca-guess-batch" style="width: 3ch;" value="10" type="number" max="100"> words per game.</label>
-				<label>Alpha: <input id="voca-guess-alpha" class="debug" value="0.55">.</label>
-				<label>Target: <input id="voca-guess-target" class="debug" value="0.8"></label>
+				<label>Alpha: <input id="voca-guess-alpha" class="debug" value="">.</label>
+				<label>Target: <input id="voca-guess-target" class="debug" value=""></label>
 				<label class="debug">Words: <textarea id="voca-guess-words"></textarea>,</label>
 				<label class="debug">or from url: <input id="voca-guess-words-url">.</label>
 				<button id="voca-guess-run" type="submit">Start</button>
@@ -589,9 +589,9 @@
 							}
 
 							load(m) {
-								this.ok = m.ok || 0
-								this.fail = m.fail || 0
-								this.stats = m.stats || 0
+								this.ok = parseFloat(m.ok) || 0
+								this.fail = parseFloat(m.fail) || 0
+								this.stats = parseInt(m.stats) || 0
 							}
 
 							score() { return this.ok + this.fail }
@@ -703,6 +703,9 @@
 					let state
 					let alpha, target
 
+					alphaEl.value = 0.3
+					targetEl.value = 0.8
+
 					let batchDone = b => b[0].ok > target
 					let batchSort = b => {
 						b.sort((l, r) => l.score() - r.score())
@@ -721,8 +724,8 @@
 						let offset = 0
 						let page = parseInt(batchEl.value) || 10
 
-						alpha = alphaEl.value
-						target = targetEl.value
+						alpha = parseFloat(alphaEl.value)
+						target = parseFloat(targetEl.value)
 
 						while (true) {
 							let batch = words.slice(offset, offset + page)
@@ -809,8 +812,8 @@
 							ok = !!w.alt.find(r => cmp(r, res))
 						}
 
-						if (!ok) { w.fail += 0.05 }
-						w.ok = w.ok * alpha + ok * (1 - alpha)
+						if (!ok) { w.fail += 0.02 }
+						w.ok = ok? w.ok + alpha: w.ok / 3
 						w.stats = (w.stats << 1 | ok) & 0x7fffffff
 
 						lastQ.innerText = quest.innerText
