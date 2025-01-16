@@ -674,6 +674,9 @@
 						const sub = {"š": "s", "đ": "d", "ž": "z", "č": "c", "ć": "c"}
 						const bald = c => sub[c] || c
 
+						exp = exp.toLocaleLowerCase()
+						got = got.toLocaleLowerCase()
+
 						let strict = strictEl.checked
 
 						if (strict && exp != got) return false
